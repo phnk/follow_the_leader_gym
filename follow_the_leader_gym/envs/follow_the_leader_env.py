@@ -2,6 +2,8 @@ import gym
 from gym import spaces
 import numpy as np
 import math
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 
 class FollowTheLeaderEnv(gym.Env):
     metadata = {"render_modes": ["human"], "render_fps": 4}
@@ -19,6 +21,8 @@ class FollowTheLeaderEnv(gym.Env):
         self.num_beams = n # number of beams
         self.leader_x = None
         self.follower_x = None
+        self.leader_circle = None
+        self.follower_circle = None
 
         # action space: left or right, discrete
         self.action_space = spaces.Discrete(2)
@@ -26,12 +30,22 @@ class FollowTheLeaderEnv(gym.Env):
         # observation space array of length n with 1s or 0s.
         self.observation_space = spaces.MultiBinary(2 * self.num_beams + 1)
 
+        self.fig, self.ax = plt.subplots()
+
     def reset(self, seed=None, options=None):
         self._seed(seed)
 
         self.leader_x = np.random.randint(self.MIN+1, self.MAX)
         self.current_leader_direction = np.random.choice([-1, 1])
         self.follower_x = np.random.randint(self.MIN+1, self.MAX)
+
+        self.leader_circle = None
+        self.follower_circle = None
+
+        self.ax.clear()
+
+        self.ax.set_xlim([0, 100])
+        self.ax.set_ylim([0, 100])
 
         # caluclate the angle for our beams. Assumption: equally spaced out. We always have 1 beam straight forward.
         incr = 90/(self.num_beams+1)
@@ -63,8 +77,6 @@ class FollowTheLeaderEnv(gym.Env):
 
         obs = self._get_obs()
 
-        print(self.leader_x, self.follower_x)
-
         info = self._get_info()
 
         # get done?
@@ -73,7 +85,19 @@ class FollowTheLeaderEnv(gym.Env):
         return obs, reward, done, info
 
     def render(self):
-        pass
+        if self.leader_circle is None:
+            self.leader_circle = patches.Circle((self.leader_x, 80), radius=2, color="r")
+        if self.follower_circle is None:
+            self.follower_circle = patches.Circle((self.follower_x, 20), radius=2, color="b")
+
+            self.ax.add_patch(self.leader_circle)
+            self.ax.add_patch(self.follower_circle)
+
+
+        self.leader_circle.center = (self.leader_x, 80)
+        self.follower_circle.center = (self.follower_x, 20)
+        plt.draw()
+        plt.pause(0.00001)
 
     def close(self):
         pass
