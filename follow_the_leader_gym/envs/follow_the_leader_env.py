@@ -86,6 +86,8 @@ class FollowTheLeaderEnv(gym.Env):
         # get done?
         done = False
 
+        self.render()
+
         return obs, reward, done, info
 
     def render(self):
@@ -158,7 +160,7 @@ class FollowTheLeaderEnv(gym.Env):
 
     def _get_reward(self):
         if abs(self.leader_x - self.follower_x) <= 1:
-            return 1
+            return 1.0
         else:
             return 1/abs(self.leader_x - self.follower_x)
 
