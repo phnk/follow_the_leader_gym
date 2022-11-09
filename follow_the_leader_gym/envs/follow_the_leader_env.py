@@ -34,6 +34,7 @@ class FollowTheLeaderEnv(gym.Env):
 
     def reset(self, seed=None, options=None):
         self._seed(seed)
+        self.timestep = 0
 
         self.leader_x = np.random.randint(self.MIN+1, self.MAX)
         self.current_leader_direction = np.random.choice([-1, 1])
@@ -82,9 +83,10 @@ class FollowTheLeaderEnv(gym.Env):
         obs = self._get_obs()
 
         info = self._get_info()
+        self.timestep += 1
 
         # get done?
-        done = False
+        done = True if self.timestep > 1000 else False
 
         self.render()
 
